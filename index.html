@@ -83,17 +83,42 @@ h1{margin:0;font-family:var(--f-display);font-weight:800;font-size:clamp(26px,3.
 .tt-theme{display:inline-flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;font-weight:700;padding:3px 9px 3px 6px;border-radius:999px;background:var(--sea)}
 .tt-theme i{width:10px;height:10px;border-radius:3px;display:inline-block}
 
+/* ---------- phone dock (search, key, tapped country) ---------- */
+.dock{display:none}
+.eyebrow .by{display:none}
+.info{display:grid;grid-template-columns:14px 1fr auto;gap:4px 10px;align-items:start;padding:12px 12px 10px 14px;border-bottom:1px solid var(--line)}
+.info .sw{width:14px;height:14px;margin-top:4px}
+.info .tt-country{font-size:17px}
+.info .tt-dish{margin-top:2px;font-size:15px}
+.info .tt-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.x{all:unset;cursor:pointer;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;color:var(--muted);font-size:20px;line-height:1;margin:-4px -4px 0 0}
+.x:focus-visible{outline:2px solid var(--accent)}
+.dockrow{display:flex;gap:8px;align-items:center;padding:10px}
+.dockrow .search{flex:1;min-width:0}
+.keybtn{font:inherit;font-size:14px;font-weight:700;color:var(--ink);background:var(--sea);border:1px solid var(--line);border-radius:999px;padding:9px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.keybtn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.keybtn .dots{display:grid;grid-template-columns:repeat(2,6px);gap:2px}
+.keybtn .dots i{width:6px;height:6px;border-radius:2px}
+
 @media (max-width:720px){
-  .title{padding:14px 16px 12px;gap:8px}
-  .lede{display:none}
-  .legend{top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;max-height:52%}
-  .legend ul{grid-template-columns:1fr 1fr;column-gap:4px}
-  .legend li button{font-size:13px;padding:5px 6px;gap:8px}
-  .legend.closed ul{display:none}
-  .toggle{display:inline;font:inherit;font-size:12px;font-weight:700;color:var(--accent);background:none;border:0;cursor:pointer;padding:2px 0}
-  .leaflet-bottom.leaflet-right{bottom:72px}
+  .title{top:calc(10px + env(safe-area-inset-top,0px));left:max(10px,env(safe-area-inset-left,0px));width:auto;max-width:calc(100% - 20px);padding:9px 14px 10px;gap:3px;border-radius:12px}
+  .eyebrow{font-size:10px;letter-spacing:.07em}
+  .eyebrow .by{display:inline}
+  h1{font-size:21px}
+  .title .lede,.title .credit{display:none}
+  .dock{display:flex;flex-direction:column;position:absolute;z-index:600;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:calc(100% - 100px - env(safe-area-inset-top,0px));overflow:hidden;border-radius:14px}
+  .dock .legend{position:static;box-shadow:none;width:auto;max-height:none;min-height:0;border-radius:0;border-bottom:1px solid var(--line);background:transparent}
+  .dock .legend.closed{display:none}
+  .dock .legend header{padding:12px 14px 4px}
+  .dock .legend ul{grid-template-columns:1fr 1fr;column-gap:2px;max-height:min(44vh,330px);padding:2px 6px 8px}
+  .dock .legend li button{font-size:13px;padding:6px 6px;gap:7px;grid-template-columns:14px 1fr auto}
+  .dock .legend .sw{width:14px;height:14px}
+  .leaflet-tooltip.dish{display:none}
   .leaflet-control-zoom{display:none}
+  .leaflet-bottom.leaflet-right{bottom:auto;top:calc(76px + env(safe-area-inset-top,0px))}
+  .leaflet-control-attribution{font-size:9.5px;border-radius:6px 0 0 6px}
 }
+@media (max-width:360px){.keybtn .label{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -102,24 +127,32 @@ h1{margin:0;font-family:var(--f-display);font-weight:800;font-size:clamp(26px,3.
 <div id="map" role="application" aria-label="World map of famous dishes by country"></div>
 
 <section class="card title" aria-labelledby="t">
-  <div class="eyebrow">#30DayMapChallenge · Senses: Taste</div>
+  <div class="eyebrow">#30DayMapChallenge · Senses: Taste<span class="by"> · Zonovi</span></div>
   <h1 id="t">A Taste of the World</h1>
   <p class="lede">Every country coloured by the dish it's famous for. Hover or tap a country to see what's on the plate.</p>
-  <div class="search">
+  <div id="searchHome"><div class="search" id="search">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input id="q" list="countries" placeholder="Find a country…" autocomplete="off" aria-label="Find a country">
+    <input id="q" list="countries" placeholder="Find a country…" autocomplete="off" enterkeyhint="search" aria-label="Find a country">
     <datalist id="countries"></datalist>
-  </div>
+  </div></div>
   <div class="credit"><span>Map by <a href="https://www.zonovi.co.uk" target="_blank" rel="noopener">Zonovi</a></span><span id="tally"></span></div>
 </section>
 
 <aside class="card legend" id="legend" aria-labelledby="lg">
   <header>
     <h2 id="lg">On the menu</h2>
-    <span><button class="reset" id="reset" hidden>Show all</button> <button class="toggle" id="toggle" aria-expanded="false">Show</button></span>
+    <button class="reset" id="reset" hidden>Show all</button>
   </header>
   <ul id="items"></ul>
 </aside>
+
+<div class="card dock" id="dock">
+  <div class="info" id="info" hidden aria-live="polite"></div>
+  <div class="dockrow">
+    <div id="searchDock" style="flex:1;min-width:0"></div>
+    <button class="keybtn" id="keyBtn" type="button" aria-expanded="false" aria-controls="legend"><span class="dots" aria-hidden="true"><i style="background:#A9432E"></i><i style="background:#EFE0A8"></i><i style="background:#2B7BB9"></i><i style="background:#6E1F2A"></i></span><span class="label">Key</span></button>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
@@ -143,7 +176,8 @@ const map = L.map("map", {
 L.control.zoom({ position: "bottomright" }).addTo(map);
 map.attributionControl.setPrefix(false).addAttribution("Boundaries: Esri World Countries · Dishes: Zonovi");
 
-let active = null, hovered = null;
+let active = null, hovered = null, selected = null;
+const mq = matchMedia("(max-width:720px)");
 const fillOpacity = t => active && active !== t ? .12 : (t === "No Local Cuisine" ? .55 : .95);
 
 function styleFor(f) {
@@ -164,6 +198,7 @@ const countries = L.geoJSON(DATA, {
     layer.bindTooltip(() => tip(f.properties), tipOpts);
     layer.on("mouseover", () => highlight(layer, f));
     layer.on("mouseout", () => unhighlight(layer, f));
+    layer.on("click", e => { if (mq.matches) { L.DomEvent.stopPropagation(e); select(f, layer); } });
   }
 }).addTo(map);
 
@@ -173,15 +208,38 @@ DATA.features.filter(f => f.properties.s).forEach(f => {
   const p = f.properties;
   const m = L.circleMarker([p.ly, p.lx], { radius: 4.5, weight: 1.2, color: css("--card"), fillColor: THEMES[p.t], fillOpacity: fillOpacity(p.t), opacity: active && active !== p.t ? .2 : 1 });
   m.bindTooltip(() => tip(p), { ...tipOpts, sticky: false });
-  m.on("mouseover", () => m.setRadius(7)).on("mouseout", () => m.setRadius(4.5));
+  m.on("mouseover", () => m.setRadius(7)).on("mouseout", () => { if (selected !== m) m.setRadius(4.5); });
+  m.on("click", e => { if (mq.matches) { L.DomEvent.stopPropagation(e); select(f, m); } });
   m.feature = f; byName[p.c].dot = m; dots.addLayer(m);
 });
 
-function highlight(layer, f) { hovered = layer; layer.setStyle({ weight: 2, color: css("--ink") }); layer.bringToFront(); }
-function unhighlight(layer, f) { if (hovered === layer) hovered = null; layer.setStyle(styleFor(f)); }
+function highlight(layer, f) { hovered = layer; if (layer.setRadius) return; layer.setStyle({ weight: 2, color: css("--ink") }); layer.bringToFront(); }
+function unhighlight(layer, f) { if (hovered === layer) hovered = null; if (selected === layer || layer.setRadius) return; layer.setStyle(styleFor(f)); }
+
+/* Phones: tapping a country fills the card in the bottom dock instead of a floating tooltip */
+const info = document.getElementById("info");
+function select(f, layer) {
+  const prev = selected; selected = null;
+  if (prev && prev !== layer) prev.setRadius ? prev.setRadius(4.5) : prev.setStyle(styleFor(prev.feature));
+  if (prev === layer) { selected = prev; clearSelection(); return; }
+  selected = layer;
+  if (layer.setRadius) layer.setRadius(7); else { layer.setStyle({ weight: 2, color: css("--ink") }); layer.bringToFront(); }
+  const p = f.properties;
+  info.innerHTML = `<span class="sw${p.t === "No Local Cuisine" ? " none" : ""}" style="background:${THEMES[p.t]}"></span>
+    <div style="min-width:0"><div class="tt-country">${esc(p.c)}</div><div class="tt-dish">${esc(p.d)}</div>
+    <div class="tt-meta">${esc(p.t)}${p.aff ? ` · ${esc(p.aff)}` : ""}</div></div>
+    <button class="x" type="button" aria-label="Close">×</button>`;
+  info.hidden = false;
+}
+function clearSelection() {
+  const l = selected; selected = null; info.hidden = true;
+  if (l) l.setRadius ? l.setRadius(4.5) : l.setStyle(styleFor(l.feature));
+}
+info.addEventListener("click", e => { if (e.target.closest(".x")) clearSelection(); });
+map.on("click", () => { if (mq.matches) clearSelection(); });
 
 function restyle() {
-  countries.eachLayer(l => l.setStyle(styleFor(l.feature)));
+  countries.eachLayer(l => l.setStyle(l === selected ? { ...styleFor(l.feature), weight: 2, color: css("--ink") } : styleFor(l.feature)));
   dots.eachLayer(m => { const t = m.feature.properties.t; m.setStyle({ color: css("--card"), fillOpacity: fillOpacity(t), opacity: active && active !== t ? .2 : 1 }); });
 }
 
@@ -208,12 +266,24 @@ function setActive(t) {
 ul.addEventListener("click", e => { const b = e.target.closest("button"); if (b) setActive(active === b.dataset.t ? null : b.dataset.t); });
 resetBtn.addEventListener("click", () => setActive(null));
 
-const legend = document.getElementById("legend"), toggle = document.getElementById("toggle");
-if (matchMedia("(max-width:720px)").matches) legend.classList.add("closed");
-toggle.addEventListener("click", () => { const c = legend.classList.toggle("closed"); toggle.textContent = c ? "Show" : "Hide"; toggle.setAttribute("aria-expanded", !c); });
-L.DomEvent.disableClickPropagation(legend); L.DomEvent.disableScrollPropagation(legend);
-const titleCard = document.querySelector(".title");
-L.DomEvent.disableClickPropagation(titleCard); L.DomEvent.disableScrollPropagation(titleCard);
+/* ---------- move search + legend between desktop cards and the phone dock ---------- */
+const legend = document.getElementById("legend"), dock = document.getElementById("dock"), keyBtn = document.getElementById("keyBtn");
+const search = document.getElementById("search"), searchHome = document.getElementById("searchHome"), searchDock = document.getElementById("searchDock");
+function layout() {
+  if (mq.matches) {
+    searchDock.appendChild(search);
+    dock.insertBefore(legend, dock.firstChild);
+    legend.classList.add("closed"); keyBtn.setAttribute("aria-expanded", "false");
+  } else {
+    searchHome.appendChild(search);
+    document.body.insertBefore(legend, dock);
+    legend.classList.remove("closed"); clearSelection();
+  }
+}
+layout();
+mq.addEventListener ? mq.addEventListener("change", layout) : mq.addListener(layout);
+keyBtn.addEventListener("click", () => { const closed = legend.classList.toggle("closed"); keyBtn.setAttribute("aria-expanded", String(!closed)); });
+[legend, dock, document.querySelector(".title")].forEach(el => { L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el); });
 
 const n = DATA.features.filter(f => f.properties.t !== "No Local Cuisine").length;
 document.getElementById("tally").textContent = `${n} places · ${order.length - 1} flavours`;
@@ -227,13 +297,17 @@ function go(name) {
   if (!key) return;
   const { f, layer, dot } = byName[key], p = f.properties;
   if (p.s) map.flyTo([p.ly, p.lx], 6, { duration: .8 });
-  else map.flyToBounds(layer.getBounds(), { maxZoom: 5, padding: [40, 40], duration: .8 });
+  else map.flyToBounds(layer.getBounds(), mq.matches
+    ? { maxZoom: 5, paddingTopLeft: [20, 80], paddingBottomRight: [20, 150], duration: .8 }
+    : { maxZoom: 5, padding: [40, 40], duration: .8 });
   map.once("moveend", () => {
     const target = dot || layer;
+    if (mq.matches) { clearSelection(); select(f, target); return; }
     target.openTooltip(dot ? undefined : [p.ly, p.lx]);
     if (!dot) { highlight(layer, f); setTimeout(() => unhighlight(layer, f), 2500); }
   });
   q.blur();
+  if (mq.matches) { legend.classList.add("closed"); keyBtn.setAttribute("aria-expanded", "false"); }
 }
 q.addEventListener("change", () => go(q.value));
 q.addEventListener("keydown", e => { if (e.key === "Enter") go(q.value); });
